@@ -4,3 +4,4 @@ mediapipe
 numpy
 tensorflow
 keras
+flask-cors
