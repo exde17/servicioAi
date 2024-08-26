@@ -55,6 +55,7 @@
 #     app.run(host='0.0.0.0', port=5000)
 
 
+#///////////////////////////////////////codigo funcional ///////////////////////
 #-----------------este es incluye enviar el video en base64-------------------
 
 from flask import Flask, request, jsonify
@@ -89,6 +90,51 @@ def evaluate():
         return jsonify({"result": result}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+#///////////////////////////////////////codigo funcional ///////////////////////  
+
+# from flask import Flask, request, jsonify
+# import base64
+# import os
+# from evaluate_service import evaluate_model, load_lstm_model
+# from constants import ROOT_PATH, FRAME_ACTIONS_PATH, DATA_PATH
+# from flask_cors import CORS
+# from flask_socketio import SocketIO, emit
+
+# app = Flask(__name__)
+# CORS(app)  # Habilita CORS para todas las rutas
+# socketio = SocketIO(app, cors_allowed_origins="*")  # Inicializa SocketIO con Flask
+
+# # Carga el modelo LSTM
+# model = load_lstm_model()
+
+# @socketio.on('evaluate_video')
+# def evaluate(data):
+#     try:
+#         threshold = data.get('threshold', 0.9)
+#         video_base64 = data.get('video_base64')
+
+#         # Decodifica el video base64
+#         video_data = base64.b64decode(video_base64)
+#         video_path = "temp_video.mp4"
+#         with open(video_path, "wb") as video_file:
+#             video_file.write(video_data)
+
+#         # Ejecuta la evaluación del modelo
+#         result = evaluate_model(model, video_path=video_path, threshold=threshold)
+
+#         # Elimina el archivo temporal
+#         os.remove(video_path)
+
+#         # Envía el resultado de vuelta al cliente
+#         emit('evaluation_result', {"result": result})
+#     except Exception as e:
+#         emit('error', {"error": str(e)})
+
+# if __name__ == '__main__':
+#     socketio.run(app, debug=True)
+
+
 
 # @app.route('/get_video', methods=['POST'])
 # def get_video():
