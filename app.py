@@ -64,6 +64,7 @@ import os
 from evaluate_service import evaluate_model, load_lstm_model
 from constants import ROOT_PATH, FRAME_ACTIONS_PATH, DATA_PATH
 from flask_cors import CORS
+from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas las rutas
@@ -86,6 +87,8 @@ def evaluate():
 
         # Elimina el archivo temporal
         os.remove(video_path)
+
+        print(result)
 
         return jsonify({"result": result}), 200
     except Exception as e:
@@ -262,7 +265,7 @@ def get_video():
             return jsonify({"error": "No word provided"}), 400
 
         words = phrase.split()  # Divide la frase en palabras individuales
-        video_data_list = []
+        video_clips = []
 
         for word in words:
             if word.lower() in CONNECTORS:  # Omitir conectores
@@ -272,22 +275,30 @@ def get_video():
             video_path_gif = os.path.join("static", "videos", f"{word}.gif")
 
             if os.path.isfile(video_path_mp4):
-                video_path = video_path_mp4
-                mime_type = 'video/mp4'
+                video_clips.append(VideoFileClip(video_path_mp4))
             elif os.path.isfile(video_path_gif):
-                video_path = video_path_gif
-                mime_type = 'image/gif'
+                video_clips.append(VideoFileClip(video_path_gif))
             else:
                 continue  # Omite si no se encuentra un video o GIF para esta palabra
 
-            with open(video_path, "rb") as video_file:
-                video_base64 = base64.b64encode(video_file.read()).decode('utf-8')
-                video_data_list.append({"video_base64": video_base64, "mime_type": mime_type})
+        if video_clips:
+            final_clip = concatenate_videoclips(video_clips)
 
-        if not video_data_list:
+            output_path = "static/videos/final_video.mp4"
+            final_clip.write_videofile(output_path, codec="libx264")
+
+            with open(output_path, "rb") as video_file:
+                video_base64 = base64.b64encode(video_file.read()).decode('utf-8')
+            
+            # Elimina el archivo temporal si ya no lo necesitas
+            #os.remove(output_path)
+        else:
+            video_base64 = None
+
+        if not video_base64:
             return jsonify({"error": "No videos found for any words"}), 404
 
-        return jsonify({"videos": video_data_list}), 200
+        return jsonify({"videos": video_base64}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
