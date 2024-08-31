@@ -205,8 +205,7 @@ def evaluate():
 #         return jsonify({"error": str(e)}), 500
 
 #frases con conectores
-# Lista de conectores comunes a omitir
-# CONNECTORS = {"y", "e", "ni", "pero", "aunque", "sino", "o", "u", "que", "si", "como", "cuando", "donde", "mientras", "porque", "aunque", "mientras", "la", "con", "de", "en", "para", "por", "según", "sin", "sobre", "tras", "durante", "mediante", "excepto", "salvo", "incluso", "más", "menos", "mejor",}
+
 
 CONNECTORS = (
     # Conectores de adición

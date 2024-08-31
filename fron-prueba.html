@@ -19,7 +19,9 @@
     </form>
     <div id="response"></div>
 
-    <script>
+    <script type="module">
+        import CONFIG from './config.js';
+
         function uploadVideo() {
             const formData = new FormData(document.getElementById('uploadForm'));
             const videoFile = formData.get('videoFile');
@@ -35,7 +37,7 @@
                     video_base64: base64Video
                 };
 
-                fetch('http://127.0.0.1:5000/evaluate', {
+                fetch(`${CONFIG.HOST}/evaluate`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -58,4 +60,3 @@
     </script>
 </body>
 </html>
-
