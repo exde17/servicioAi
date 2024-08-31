@@ -19,9 +19,7 @@
     </form>
     <div id="response"></div>
 
-    <script type="module">
-        import CONFIG from './config.js';
-
+    <script>
         function uploadVideo() {
             const formData = new FormData(document.getElementById('uploadForm'));
             const videoFile = formData.get('videoFile');
@@ -60,3 +58,4 @@
     </script>
 </body>
 </html>
+
