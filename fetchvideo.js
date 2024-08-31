@@ -1,3 +1,5 @@
+import CONFIG from './config.js';
+
 async function fetchVideos() {
     const formData = new FormData(document.getElementById('fetchForm'));
     const word = formData.get('word');
