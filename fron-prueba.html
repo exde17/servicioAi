@@ -7,19 +7,15 @@
 </head>
 <body>
     <form id="uploadForm">
-        <!-- <label for="wordName">Word Name:</label>
-        <input type="text" id="wordName" name="wordName"><br><br>
-        <label for="marginFrame">Margin Frame:</label>
-        <input type="number" id="marginFrame" name="marginFrame"><br><br>
-        <label for="minCantFrames">Min Cant Frames:</label>
-        <input type="number" id="minCantFrames" name="minCantFrames"><br><br> -->
         <label for="videoFile">Video File:</label>
         <input type="file" id="videoFile" name="videoFile" accept="video/*"><br><br>
         <input type="button" value="Upload" onclick="uploadVideo()">
     </form>
     <div id="response"></div>
 
-    <script>
+    <script type="module">
+        import CONFIG from './config.js';
+
         function uploadVideo() {
             const formData = new FormData(document.getElementById('uploadForm'));
             const videoFile = formData.get('videoFile');
@@ -29,13 +25,10 @@
                 const base64Video = event.target.result.split(',')[1];
                 
                 const data = {
-                    // word_name: formData.get('wordName'),
-                    // margin_frame: parseInt(formData.get('marginFrame')),
-                    // min_cant_frames: parseInt(formData.get('minCantFrames')),
                     video_base64: base64Video
                 };
 
-                fetch(`${CONFIG.HOST}/evaluate`, {
+                fetch('https://ai.tickapp.online/evaluate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -58,4 +51,3 @@
     </script>
 </body>
 </html>
-
