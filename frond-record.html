@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text</title>
+    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+</head>
+<body>
+    <h1>Prueba de Conversión de Voz a Texto</h1>
+
+    <button id="start-record-btn">Comenzar Grabación</button>
+    <button id="stop-record-btn" disabled>Detener Grabación</button>
+
+    <h2>Texto Transcrito:</h2>
+    <p id="transcription">Aquí aparecerá el texto...</p>
+
+    <script>
+        let recorder;  // Variable para el objeto Recorder.js
+        let audioContext;
+
+        // Iniciar grabación
+        document.getElementById("start-record-btn").addEventListener("click", function() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const input = audioContext.createMediaStreamSource(stream);
+                    recorder = new Recorder(input, { numChannels: 1 });
+
+                    recorder.record();
+                    document.getElementById("stop-record-btn").disabled = false;
+                    document.getElementById("start-record-btn").disabled = true;
+                })
+                .catch(function(err) {
+                    console.error("Error al acceder al micrófono: ", err);
+                });
+        });
+
+        // Detener grabación y enviar archivo al servidor
+        document.getElementById("stop-record-btn").addEventListener("click", function() {
+            recorder.stop();
+            document.getElementById("stop-record-btn").disabled = true;
+            document.getElementById("start-record-btn").disabled = false;
+
+            // Exportar audio como WAV y enviarlo al servidor
+            recorder.exportWAV(function(blob) {
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = function() {
+                    const audioBase64 = reader.result.split(',')[1];  // Base64 sin el prefijo
+                    console.log(audioBase64);  // Verifica el contenido
+
+                    // Enviar archivo base64 al servidor
+                    fetch('http://localhost:5000/speech_to_text', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ audio_base64: audioBase64 })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.text) {
+                            document.getElementById("transcription").innerText = data.text;
+                        } else {
+                            document.getElementById("transcription").innerText = "Error: " + data.error;
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById("transcription").innerText = "Error al enviar el audio.";
+                        console.error("Error:", error);
+                    });
+                };
+            });
+        });
+    </script>
+</body>
+</html>
