@@ -7,32 +7,75 @@ from evaluate_service import evaluate_model, load_lstm_model
 from constants import ROOT_PATH, FRAME_ACTIONS_PATH, DATA_PATH
 from flask_cors import CORS
 from moviepy.editor import VideoFileClip, concatenate_videoclips
+from gtts import gTTS
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas las rutas
 model = load_lstm_model()
 
+# @app.route('/evaluate', methods=['POST'])
+# def evaluate():
+#     try:
+#         threshold = request.json.get('threshold', 0.9)
+#         video_base64 = request.json.get('video_base64')
+
+#         # Decodifica el video base64
+#         video_data = base64.b64decode(video_base64)
+#         video_path = "temp_video.mp4"
+#         with open(video_path, "wb") as video_file:
+#             video_file.write(video_data)
+
+#         # Ejecuta la evaluación del modelo
+#         result = evaluate_model(model, video_path=video_path, threshold=threshold)
+
+#         # Elimina el archivo temporal
+#         os.remove(video_path)
+
+#         print(result)
+
+#         return jsonify({"result": result}), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+def text_to_speech(text, audio_filename="speech.mp3"):
+    """Convierte texto en audio utilizando gTTS y guarda en archivo MP3."""
+    tts = gTTS(text=text, lang='es')
+    tts.save(audio_filename)
+    return audio_filename
+
 @app.route('/evaluate', methods=['POST'])
 def evaluate():
     try:
+        # Obtener parámetros del request
         threshold = request.json.get('threshold', 0.9)
         video_base64 = request.json.get('video_base64')
 
-        # Decodifica el video base64
+        # Decodificar el video base64
         video_data = base64.b64decode(video_base64)
         video_path = "temp_video.mp4"
         with open(video_path, "wb") as video_file:
             video_file.write(video_data)
 
-        # Ejecuta la evaluación del modelo
+        # Ejecutar la evaluación del modelo para obtener el resultado en texto
         result = evaluate_model(model, video_path=video_path, threshold=threshold)
 
-        # Elimina el archivo temporal
+        # Convertir el texto a voz y generar archivo de audio
+        audio_filename = text_to_speech(result)
+
+        # Leer el archivo de audio y convertirlo a base64 para devolverlo en la respuesta
+        with open(audio_filename, "rb") as audio_file:
+            audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
+
+        # Eliminar archivos temporales
         os.remove(video_path)
+        os.remove(audio_filename)
 
-        print(result)
+        # Devolver el resultado en texto y el audio como base64
+        return jsonify({
+            "Message": result,
+            "voice": audio_base64
+        }), 200
 
-        return jsonify({"result": result}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
