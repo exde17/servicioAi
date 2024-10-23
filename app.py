@@ -1,7 +1,9 @@
 
 from flask import Flask, request, jsonify
+from pydub import AudioSegment
 import base64
 import os
+import subprocess
 import speech_recognition as sr
 from evaluate_service import evaluate_model, load_lstm_model
 from constants import ROOT_PATH, FRAME_ACTIONS_PATH, DATA_PATH
@@ -12,30 +14,6 @@ from gtts import gTTS
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas las rutas
 model = load_lstm_model()
-
-# @app.route('/evaluate', methods=['POST'])
-# def evaluate():
-#     try:
-#         threshold = request.json.get('threshold', 0.9)
-#         video_base64 = request.json.get('video_base64')
-
-#         # Decodifica el video base64
-#         video_data = base64.b64decode(video_base64)
-#         video_path = "temp_video.mp4"
-#         with open(video_path, "wb") as video_file:
-#             video_file.write(video_data)
-
-#         # Ejecuta la evaluación del modelo
-#         result = evaluate_model(model, video_path=video_path, threshold=threshold)
-
-#         # Elimina el archivo temporal
-#         os.remove(video_path)
-
-#         print(result)
-
-#         return jsonify({"result": result}), 200
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
 
 def text_to_speech(text, audio_filename="speech.mp3"):
     """Convierte texto en audio utilizando gTTS y guarda en archivo MP3."""
@@ -71,6 +49,7 @@ def evaluate():
         os.remove(audio_filename)
 
         # Devolver el resultado en texto y el audio como base64
+        print("Resolvio")
         return jsonify({
             "Message": result,
             "voice": audio_base64
@@ -180,6 +159,12 @@ def get_video():
 
 #////////////////////////////////////////////////////////////////////////   
 
+def convert_to_wav(input_path, output_path):
+    # Especifica la ruta completa de ffmpeg.exe
+    ffmpeg_path = r'C:\ffmpeg\bin\ffmpeg.exe'
+    command = [ffmpeg_path, '-i', input_path, output_path]
+    subprocess.run(command, check=True)
+
 @app.route('/speech_to_text', methods=['POST'])
 def speech_to_text():
     try:
@@ -189,15 +174,19 @@ def speech_to_text():
 
         # Decodifica el archivo de audio base64
         audio_data = base64.b64decode(audio_base64)
-        audio_path = "temp_audio.wav"
+        audio_path = "temp_audio.mp3"
         with open(audio_path, "wb") as audio_file:
             audio_file.write(audio_data)
+
+        # Convertir el archivo de MP3 a WAV usando subprocess y FFmpeg
+        wav_path = "temp_audio.wav"
+        convert_to_wav(audio_path, wav_path)
 
         # Inicializa el recognizer de SpeechRecognition
         recognizer = sr.Recognizer()
 
         # Lee el archivo de audio usando SpeechRecognition
-        with sr.AudioFile(audio_path) as source:
+        with sr.AudioFile(wav_path) as source:
             audio = recognizer.record(source)
 
         # Intenta reconocer el texto en el audio
@@ -208,8 +197,9 @@ def speech_to_text():
         except sr.RequestError as e:
             return jsonify({"error": f"Error con el servicio de reconocimiento: {str(e)}"}), 500
         finally:
-            # Elimina el archivo de audio temporal
+            # Elimina los archivos de audio temporales
             os.remove(audio_path)
+            os.remove(wav_path)
 
         return jsonify({"text": text}), 200
     except Exception as e:
