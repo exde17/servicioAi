@@ -159,6 +159,7 @@ def get_video():
 
 #////////////////////////////////////////////////////////////////////////   
 
+#recordar instalar ffmpeg en el sistema y configurar la ruta en la variable ffmpeg_path o en variables de entorno del sistema, descargar ffmpeg de https://www.gyan.dev/ffmpeg/builds/#release-builds y escoger ffmpeg-git-full.7z descomprimirlo en la ruta deseada
 def convert_to_wav(input_path, output_path):
     # Especifica la ruta completa de ffmpeg.exe
     ffmpeg_path = r'C:\ffmpeg\bin\ffmpeg.exe'
