@@ -4,8 +4,8 @@ async function fetchVideos() {
     const formData = new FormData(document.getElementById('fetchForm'));
     const word = formData.get('word');
 
-    await fetch('https://ai.tickapp.online/get_video', {
-    //await fetch('http://localhost:5000/get_video', {
+    // await fetch('https://ai.tickapp.online/get_video', {
+    await fetch('http://localhost:5000/get_video', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
