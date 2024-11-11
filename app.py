@@ -138,7 +138,9 @@ def get_video():
 
             if os.path.isfile(ruta_video_mp4):
                 clips_video.append(VideoFileClip(ruta_video_mp4))
+                print(ruta_video_mp4)
             elif os.path.isfile(ruta_video_gif):
+                print(ruta_video_gif)
                 clips_video.append(VideoFileClip(ruta_video_gif))
             else:
                 continue  # Omitir si no se encuentra un videos o GIF para esta palabra
